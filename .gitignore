@@ -31,3 +31,14 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Ignorar archivos de video
+*.mp4
+*.m3u8
+*.ts
+
+# Ignorar archivos temporales y de caché
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db

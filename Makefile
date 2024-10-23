@@ -1,7 +1,7 @@
 # Variables
 APP_NAME = demo-stram-java
 JAR_FILE = target/$(APP_NAME).jar
-DOCKER_IMAGE = tu-springboot-image:latest
+DOCKER_IMAGE = springboot-stream-app:latest
 
 # Meta targets
 .PHONY: all clean build docker-build docker-run docker-compose-up
@@ -23,7 +23,7 @@ docker-build: $(JAR_FILE)
 
 docker-run:
 	@echo "Running Docker image..."
-	docker run -p 8082:8080 $(DOCKER_IMAGE)
+	docker run -p 8082:8082 $(DOCKER_IMAGE)
 
 docker-compose-up:
 	@echo "Up the services with Docker Compose..."

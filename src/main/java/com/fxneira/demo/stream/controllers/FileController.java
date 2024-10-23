@@ -12,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
 @RestController
 @RequestMapping("/api/files")
@@ -24,12 +26,8 @@ public class FileController {
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
         File tempFile = File.createTempFile("upload-", file.getOriginalFilename());
         file.transferTo(tempFile);
-        try {
-            minioService.uploadFile(file.getOriginalFilename(), tempFile);
-            return ResponseEntity.status(HttpStatus.CREATED).body("File uploaded successfully");
-        } catch (MinioException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload file");
-        }
+        minioService.uploadFile(file.getOriginalFilename(), tempFile);
+        return ResponseEntity.status(HttpStatus.CREATED).body("File uploaded successfully");
     }
 
     @GetMapping("/download/{filename}")
@@ -41,6 +39,8 @@ public class FileController {
             return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
         } catch (MinioException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            throw new RuntimeException(e);
         }
     }
 }
