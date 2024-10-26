@@ -5,7 +5,7 @@ import io.minio.PutObjectArgs;
 import io.minio.GetObjectArgs;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
-import io.minio.errors.MinioException;
+import io.minio.errors.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.UUID;
 
 @Service
 public class MinioService {
@@ -42,17 +43,19 @@ public class MinioService {
         }
     }
 
-    public void uploadFile(String objectKey, File file) {
-        try (InputStream inputStream = new FileInputStream(file)) {
-            minioClient.putObject(PutObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(objectKey)
-                    .stream(inputStream, file.length(), -1)
-                    .contentType("application/octet-stream")
-                    .build());
-        } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
-            e.printStackTrace();
-        }
+    public String uploadFile(String originalFileName, File file) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+        InputStream inputStream = new FileInputStream(file);
+        String fileExtension = originalFileName.substring(originalFileName.lastIndexOf('.'));
+        String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
+
+        minioClient.putObject(PutObjectArgs.builder()
+                .bucket(bucketName)
+                .object(uniqueFileName)
+                .stream(inputStream, file.length(), -1)
+                .contentType("application/octet-stream")
+                .build());
+
+        return uniqueFileName;
     }
 
     public InputStream downloadFile(String objectKey) throws MinioException, IOException, NoSuchAlgorithmException, InvalidKeyException {

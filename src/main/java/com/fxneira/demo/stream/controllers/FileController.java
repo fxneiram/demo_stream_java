@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/files")
@@ -33,7 +34,7 @@ public class FileController {
             File tempFile = File.createTempFile("upload-", file.getOriginalFilename());
             file.transferTo(tempFile);
 
-            minioService.uploadFile(file.getOriginalFilename(), tempFile);
+            minioService.uploadFile(Objects.requireNonNull(file.getOriginalFilename()), tempFile);
 
             return ResponseEntity.status(HttpStatus.CREATED).body("Archivo subido exitosamente: " + file.getOriginalFilename());
         } catch (IOException e) {
