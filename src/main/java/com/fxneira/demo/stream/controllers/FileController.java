@@ -34,9 +34,9 @@ public class FileController {
             File tempFile = File.createTempFile("upload-", file.getOriginalFilename());
             file.transferTo(tempFile);
 
-            minioService.uploadFile(Objects.requireNonNull(file.getOriginalFilename()), tempFile);
+            String fileNameUploaded = minioService.uploadFile(Objects.requireNonNull(file.getOriginalFilename()), tempFile);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body("Archivo subido exitosamente: " + file.getOriginalFilename());
+            return ResponseEntity.status(HttpStatus.CREATED).body("Archivo subido exitosamente: " + fileNameUploaded);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al subir el archivo: " + e.getMessage());
         } catch (Exception e) {

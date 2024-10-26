@@ -15,7 +15,7 @@ clean:
 
 build:
 	@echo "Building JAR..."
-	mvn package
+	mvn clean package
 
 docker-build: $(JAR_FILE)
 	@echo "Building Docker image..."
@@ -32,3 +32,8 @@ docker-compose-up:
 docker-compose-down:
 	@echo "Down the services with Docker Compose..."
 	docker-compose down
+
+file-upload:
+	@echo "Uploading file..."
+	curl -X POST http://localhost:8082/api/files/upload -F file=@"C:\Users\fasan\OneDrive\Desktop\Libros TTS\A1\Caperucita Roja\input.mp4"
+
