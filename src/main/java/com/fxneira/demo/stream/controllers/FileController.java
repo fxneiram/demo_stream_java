@@ -1,6 +1,11 @@
 package com.fxneira.demo.stream.controllers;
 
+import com.fxneira.demo.stream.dtos.DefaultError;
+import com.fxneira.demo.stream.dtos.DefaultSuccess;
+import com.fxneira.demo.stream.dtos.Dto;
 import com.fxneira.demo.stream.services.MinioService;
+import com.fxneira.demo.stream.messages.Error;
+
 import io.minio.errors.MinioException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -25,10 +30,10 @@ public class FileController {
     private MinioService minioService;
 
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Dto> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
             if (file.isEmpty()) {
-                return ResponseEntity.badRequest().body("No se ha proporcionado ningún archivo.");
+                return ResponseEntity.badRequest().body(new DefaultError(Error.FILE_NOT_UPLOADED, ""));
             }
 
             File tempFile = File.createTempFile("upload-", file.getOriginalFilename());
@@ -36,11 +41,9 @@ public class FileController {
 
             String fileNameUploaded = minioService.uploadFile(Objects.requireNonNull(file.getOriginalFilename()), tempFile);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body("Archivo subido exitosamente: " + fileNameUploaded);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al subir el archivo: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.CREATED).body(new DefaultSuccess("File uploaded successfully: " + fileNameUploaded));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error inesperado: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new DefaultError(Error.FILE_UPLOAD_FAILED, e.getMessage()));
         }
     }
 
