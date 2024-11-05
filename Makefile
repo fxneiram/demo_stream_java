@@ -17,6 +17,10 @@ build:
 	@echo "Building JAR..."
 	mvn clean package -Dmaven.test.failure.ignore=true
 
+run:
+	@echo "Running APP..."
+	mvn spring-boot:run
+
 docker-build: $(JAR_FILE)
 	@echo "Building Docker image..."
 	docker build -t $(DOCKER_IMAGE) .

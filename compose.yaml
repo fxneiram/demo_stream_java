@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   springboot-stream-app:
+    container_name: springboot-stream-app
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,14 +12,30 @@ services:
       - SERVER_PORT=8082
       - SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=10MB
       - SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=10MB
+      #
       - MINIO_URL=http://minio:9000
       - MINIO_ACCESS_KEY=minio_demo_streaming
       - MINIO_SECRET_KEY=minio_demo_streaming_secret_key
       - MINIO_BUCKET_NAME=video-bucket
+      #
+      - POSTGRES_DB=demo_lang_media_content
+      - POSTGRES_USER=demo_lang_media_content_user
+      - POSTGRES_PASSWORD=demo_lang_media_content_password
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-lang-content:5433/demo_lang_media_content
+      - SPRING_DATASOURCE_USERNAME=demo_lang_media_content_user
+      - SPRING_DATASOURCE_PASSWORD=demo_lang_media_content_password
+      #
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/demo
+      #
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.PostgreSQLDialect
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     depends_on:
       - minio
+      - postgres
+      - mongo
 
   minio:
+    container_name: minio-file-server
     image: minio/minio
     ports:
       - "9000:9000"
@@ -34,5 +51,27 @@ services:
       timeout: 20s
       retries: 3
 
+  postgres:
+    container_name: postgres-lang-content
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: demo_lang_media_content
+      POSTGRES_USER: demo_lang_media_content_user
+      POSTGRES_PASSWORD: demo_lang_media_content_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  mongo:
+    container_name: mongo-lang-content
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
 volumes:
   minio-data:
+  postgres-data:
+  mongo-data:
