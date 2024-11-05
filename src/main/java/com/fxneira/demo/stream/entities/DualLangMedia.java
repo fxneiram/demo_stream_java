@@ -3,21 +3,19 @@ package com.fxneira.demo.stream.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Document(collection = "your_collection") // MongoDB
 @Entity
-@Table(name = "dual_lang_media") // PostgresSQL
+@Table(name = "dual_lang_media")
 @Data
+@EntityListeners(AuditingEntityListener.class)
 public class DualLangMedia {
 
-    @Id // For MongoDB
-    @jakarta.persistence.Id // For PostgresSQL
+    @Id
     @GeneratedValue
     private UUID id;
 
@@ -32,12 +30,11 @@ public class DualLangMedia {
     private String secondaryLang;
 
     @CreatedDate
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
     private LocalDateTime modifiedAt;
 
     private LocalDateTime deletedAt;
-
-    // Getters y Setters
 }
