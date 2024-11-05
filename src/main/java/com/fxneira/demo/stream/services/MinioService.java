@@ -56,7 +56,6 @@ public class MinioService {
             String line;
             while ((line = reader.readLine()) != null) {
                 System.out.println(line);
-                log.info(line);
             }
         }
 
