@@ -25,7 +25,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=demo_lang_media_content_user
       - SPRING_DATASOURCE_PASSWORD=demo_lang_media_content_password
       #
-      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/demo
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/demo_lang_media_content
       #
       - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.PostgreSQLDialect
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
