@@ -35,27 +35,19 @@ public class FileController {
         try {
             MultipartFile file = mediaRequest.getFile();
 
-            // Validación de archivo
             if (file == null || file.isEmpty()) {
                 return ResponseEntity.badRequest().body(new DefaultError(Error.FILE_NOT_UPLOADED, "File is empty"));
             }
 
-            // Crear archivo temporal y transferir contenido
             File tempFile = File.createTempFile("upload-", file.getOriginalFilename());
             file.transferTo(tempFile);
 
-            // Subir archivo al servicio MinIO y obtener el nombre
             String fileNameUploaded = minioService.uploadFile(Objects.requireNonNull(file.getOriginalFilename()), tempFile);
 
-            // Puedes procesar los demás campos de `mediaRequest` aquí, si es necesario.
-            // Por ejemplo, almacenar la información en base de datos.
-
-            // Respuesta exitosa con el nombre del archivo subido
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new DefaultSuccess("File uploaded successfully: " + fileNameUploaded));
 
         } catch (Exception e) {
-            // Respuesta en caso de error
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new DefaultError(Error.FILE_UPLOAD_FAILED, e.getMessage()));
         }
