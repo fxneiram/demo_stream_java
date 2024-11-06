@@ -33,16 +33,7 @@ public class FileController {
     @PostMapping("/upload")
     public ResponseEntity<Dto> uploadFile(@ModelAttribute DualLangMediaRequest mediaRequest) {
         try {
-            MultipartFile file = mediaRequest.getFile();
-
-            if (file == null || file.isEmpty()) {
-                return ResponseEntity.badRequest().body(new DefaultError(Error.FILE_NOT_UPLOADED, "File is empty"));
-            }
-
-            File tempFile = File.createTempFile("upload-", file.getOriginalFilename());
-            file.transferTo(tempFile);
-
-            String fileNameUploaded = minioService.uploadFile(Objects.requireNonNull(file.getOriginalFilename()), tempFile);
+            String fileNameUploaded = minioService.uploadFile(mediaRequest);
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new DefaultSuccess("File uploaded successfully: " + fileNameUploaded));
