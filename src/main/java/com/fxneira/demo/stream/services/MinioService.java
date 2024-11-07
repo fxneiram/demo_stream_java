@@ -1,8 +1,7 @@
 package com.fxneira.demo.stream.services;
 
-import com.fxneira.demo.stream.dtos.DefaultError;
+
 import com.fxneira.demo.stream.dtos.DualLangMediaRequest;
-import com.fxneira.demo.stream.messages.Error;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.GetObjectArgs;
@@ -10,7 +9,6 @@ import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.errors.*;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,20 +44,17 @@ public class MinioService {
     }
 
     public String uploadFile(DualLangMediaRequest mediaRequest) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException, InterruptedException {
-        MultipartFile file = mediaRequest.getFile();
+        String uniqueFileName = UUID.randomUUID().toString();
+        String base64file = mediaRequest.getBase64file();
 
-        if (file == null || file.isEmpty()) {
-            throw new RuntimeException("File is empty");
+        // Convert base64 string to file
+        byte[] decodedBytes = java.util.Base64.getDecoder().decode(base64file);
+        File tempFile = File.createTempFile("upload-", ".mp4");
+        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+            fos.write(decodedBytes);
         }
 
-        File tempFile = File.createTempFile("upload-", file.getOriginalFilename());
-        file.transferTo(tempFile);
-
-        //
-
-        String originalFileName = file.getOriginalFilename();
-        String fileExtension = originalFileName.substring(originalFileName.lastIndexOf('.'));
-        String uniqueFileName = UUID.randomUUID().toString();
+        String fileExtension = mediaRequest.getFileExtension();
         String segmentFileNamePattern = "/tmp/" + uniqueFileName + "-%03d" + fileExtension;
 
         // Use FFmpeg to split the video into 10-second segments
@@ -103,9 +98,11 @@ public class MinioService {
             segmentIndex++;
         }
 
+        // Clean up the temporary file
+        tempFile.delete();
+
         return uniqueFileName;
     }
-
     public InputStream downloadFile(String objectKey) throws MinioException, IOException, NoSuchAlgorithmException, InvalidKeyException {
         return minioClient.getObject(GetObjectArgs.builder()
                 .bucket(bucketName)

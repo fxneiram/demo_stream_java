@@ -19,6 +19,7 @@ build:
 
 run:
 	@echo "Running APP..."
+	mvn clean
 	mvn spring-boot:run
 
 docker-build: $(JAR_FILE)

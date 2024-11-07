@@ -8,6 +8,8 @@ import com.fxneira.demo.stream.services.MinioService;
 import com.fxneira.demo.stream.messages.Error;
 
 import io.minio.errors.MinioException;
+import jakarta.validation.Valid;
+import org.simpleframework.xml.core.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -25,13 +27,14 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/files")
+@Validate
 public class FileController {
 
     @Autowired
     private MinioService minioService;
 
     @PostMapping("/upload")
-    public ResponseEntity<Dto> uploadFile(@ModelAttribute DualLangMediaRequest mediaRequest) {
+    public ResponseEntity<Dto> uploadFile(@Valid @ModelAttribute DualLangMediaRequest mediaRequest) {
         try {
             String fileNameUploaded = minioService.uploadFile(mediaRequest);
 
