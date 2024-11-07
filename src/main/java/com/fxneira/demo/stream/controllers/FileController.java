@@ -1,12 +1,21 @@
 package com.fxneira.demo.stream.controllers;
 
+import com.fxneira.demo.stream.dtos.DefaultError;
+import com.fxneira.demo.stream.dtos.DefaultSuccess;
+import com.fxneira.demo.stream.dtos.Dto;
+import com.fxneira.demo.stream.dtos.DualLangMediaRequest;
 import com.fxneira.demo.stream.services.MinioService;
+import com.fxneira.demo.stream.messages.Error;
+
 import io.minio.errors.MinioException;
+import jakarta.validation.Valid;
+import org.simpleframework.xml.core.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -14,21 +23,36 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/files")
+@Validate
 public class FileController {
 
     @Autowired
     private MinioService minioService;
 
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
-        File tempFile = File.createTempFile("upload-", file.getOriginalFilename());
-        file.transferTo(tempFile);
-        minioService.uploadFile(file.getOriginalFilename(), tempFile);
-        return ResponseEntity.status(HttpStatus.CREATED).body("File uploaded successfully");
+    public ResponseEntity<Dto> uploadFile(@Valid @ModelAttribute DualLangMediaRequest mediaRequest) {
+        try {
+            String fileNameUploaded = minioService.uploadFile(mediaRequest);
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new DefaultSuccess("File uploaded successfully: " + fileNameUploaded));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new DefaultError(Error.FILE_UPLOAD_FAILED, e.getMessage()));
+        }
     }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<String> handleMaxSizeException(MaxUploadSizeExceededException exc) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("File size exceeds limit! Please upload a file smaller than " + exc.getMaxUploadSize() + " bytes.");
+    }
+
 
     @GetMapping("/download/{filename}")
     public ResponseEntity<byte[]> downloadFile(@PathVariable String filename) throws IOException {

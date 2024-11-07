@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @AllArgsConstructor
-public class HealthDto extends Dto {
-    private String message;
+public class DefaultError extends Dto {
+    private String error;
+    private String cause;
 }
