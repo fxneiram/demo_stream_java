@@ -43,6 +43,45 @@ public class MinioService {
         }
     }
 
+    public String uploadFileOct(byte[] fileContent, String fileName, String id) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException, InterruptedException {
+        String uniqueFileName = UUID.randomUUID().toString();
+        String fileExtension = ".mp4";
+
+        File tempFile = File.createTempFile("upload-", fileExtension);
+        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+            fos.write(fileContent);
+        }
+
+        String segmentFileNamePattern = "/tmp/" + uniqueFileName + "-%03d" + fileExtension;
+
+        // Upload each segment to Minio
+        int segmentIndex = 0;
+        while (true) {
+            File segmentFile = new File(String.format("/tmp/" + uniqueFileName + "-%03d" + fileExtension, segmentIndex));
+            if (!segmentFile.exists()) {
+                break;
+            }
+
+            try (InputStream inputStream = new FileInputStream(segmentFile)) {
+                String segmentFileName = uniqueFileName + "-" + segmentIndex + fileExtension;
+                minioClient.putObject(PutObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(segmentFileName)
+                        .stream(inputStream, segmentFile.length(), -1)
+                        .contentType("application/octet-stream")
+                        .build());
+            }
+
+            segmentFile.delete();
+            segmentIndex++;
+        }
+
+        // Clean up the temporary file
+        tempFile.delete();
+
+        return uniqueFileName;
+    }
+
     public String uploadFile(DualLangMediaRequest mediaRequest) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException, InterruptedException {
         String uniqueFileName = UUID.randomUUID().toString();
         String base64file = mediaRequest.getBase64file();
@@ -103,6 +142,7 @@ public class MinioService {
 
         return uniqueFileName;
     }
+
     public InputStream downloadFile(String objectKey) throws MinioException, IOException, NoSuchAlgorithmException, InvalidKeyException {
         return minioClient.getObject(GetObjectArgs.builder()
                 .bucket(bucketName)

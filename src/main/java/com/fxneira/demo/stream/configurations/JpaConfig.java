@@ -1,4 +1,4 @@
-package com.fxneira.demo.stream;
+package com.fxneira.demo.stream.configurations;
 
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.context.annotation.Bean;

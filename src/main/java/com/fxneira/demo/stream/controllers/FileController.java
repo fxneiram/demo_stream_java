@@ -13,6 +13,7 @@ import org.simpleframework.xml.core.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -46,6 +47,24 @@ public class FileController {
                     .body(new DefaultError(Error.FILE_UPLOAD_FAILED, e.getMessage()));
         }
     }
+
+    @PostMapping(value = "/upload-oct", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Dto> uploadFileOct(
+            @RequestPart byte[] fileContent,
+            @RequestHeader("X-Project-Id") String id,
+            @RequestHeader("X-File-Name") String fileName) {
+        try {
+            // Llama a tu servicio para manejar el archivo
+            String fileNameUploaded = minioService.uploadFileOct(fileContent, fileName, id);
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new DefaultSuccess("File uploaded successfully: " + fileNameUploaded));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new DefaultError(Error.FILE_UPLOAD_FAILED, e.getMessage()));
+        }
+    }
+
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<String> handleMaxSizeException(MaxUploadSizeExceededException exc) {

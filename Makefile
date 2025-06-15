@@ -31,8 +31,9 @@ docker-run:
 	docker run -p 8082:8082 $(DOCKER_IMAGE)
 
 docker-compose-up:
+	@make build
 	@echo "Up the services with Docker Compose..."
-	docker-compose up --build
+	@docker-compose up --build
 
 docker-compose-down:
 	@echo "Down the services with Docker Compose..."
